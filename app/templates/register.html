@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Register - KrishiSahay AI{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card-custom p-4 p-md-5 bg-white border-0 shadow-lg">
+                <div class="text-center mb-4">
+                    <div class="icon-circle mx-auto">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </div>
+                    <h2 class="fw-bold">Farmer Registration</h2>
+                    <p class="text-muted">Create your profile to check eligibility for agricultural schemes</p>
+                </div>
+
+                <!-- Container for front-end JS validation alerts -->
+                <div id="validationAlertContainer"></div>
+
+                <form action="{{ url_for('auth.register') }}" method="POST" id="registrationForm">
+                    
+                    <!-- Section: Personal Info -->
+                    <h4 class="border-bottom pb-2 mb-4 text-success"><i class="fa-solid fa-user me-2"></i>Personal Information</h4>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="full_name" class="form-label form-label-custom">Full Name <span class="text-danger">*</span></label>
+                            <input type="text" name="full_name" id="full_name" class="form-control form-control-custom" placeholder="e.g. Rajesh Kumar" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="farmer_id" class="form-label form-label-custom">
+                                Farmer ID / Aadhaar-linked Card
+                                <i class="fa-solid fa-circle-info text-muted ms-1" data-bs-toggle="tooltip" title="Optional: Government issued Farmer ID or Aadhaar identification number."></i>
+                            </label>
+                            <input type="text" name="farmer_id" id="farmer_id" class="form-control form-control-custom" placeholder="e.g. FID-98234-A">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="age" class="form-label form-label-custom">Age <span class="text-danger">*</span></label>
+                            <input type="number" name="age" id="age" class="form-control form-control-custom" placeholder="e.g. 45" min="18" max="120" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="category" class="form-label form-label-custom">Category <span class="text-danger">*</span></label>
+                            <select name="category" id="category" class="form-select form-control-custom" required>
+                                <option value="" disabled selected>Select Category</option>
+                                <option value="General">General</option>
+                                <option value="OBC">OBC</option>
+                                <option value="SC">SC</option>
+                                <option value="ST">ST</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="mobile_number" class="form-label form-label-custom">Mobile Number <span class="text-danger">*</span></label>
+                            <input type="tel" name="mobile_number" id="mobile_number" class="form-control form-control-custom" placeholder="e.g. 9876543210" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="email" class="form-label form-label-custom">Email <span class="text-muted">(Optional)</span></label>
+                            <input type="email" name="email" id="email" class="form-control form-control-custom" placeholder="e.g. rajesh@example.com">
+                        </div>
+                    </div>
+
+                    <!-- Section: Location details -->
+                    <h4 class="border-bottom pb-2 mb-4 text-success"><i class="fa-solid fa-map-location-dot me-2"></i>Address & Location</h4>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label for="state" class="form-label form-label-custom">State <span class="text-danger">*</span></label>
+                            <select name="state" id="state" class="form-select form-control-custom" required>
+                                <option value="" disabled selected>Select State</option>
+                                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                <option value="Assam">Assam</option>
+                                <option value="Bihar">Bihar</option>
+                                <option value="Chhattisgarh">Chhattisgarh</option>
+                                <option value="Gujarat">Gujarat</option>
+                                <option value="Haryana">Haryana</option>
+                                <option value="Himachal Pradesh">Himachal Pradesh</option>
+                                <option value="Jharkhand">Jharkhand</option>
+                                <option value="Karnataka">Karnataka</option>
+                                <option value="Kerala">Kerala</option>
+                                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                                <option value="Maharashtra">Maharashtra</option>
+                                <option value="Odisha">Odisha</option>
+                                <option value="Punjab">Punjab</option>
+                                <option value="Rajasthan">Rajasthan</option>
+                                <option value="Tamil Nadu">Tamil Nadu</option>
+                                <option value="Telangana">Telangana</option>
+                                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                <option value="West Bengal">West Bengal</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="district" class="form-label form-label-custom">District <span class="text-danger">*</span></label>
+                            <input type="text" name="district" id="district" class="form-control form-control-custom" placeholder="e.g. Nagpur" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="village" class="form-label form-label-custom">Village <span class="text-danger">*</span></label>
+                            <input type="text" name="village" id="village" class="form-control form-control-custom" placeholder="e.g. Ramtek" required>
+                        </div>
+                    </div>
+
+                    <!-- Section: Farm parameters -->
+                    <h4 class="border-bottom pb-2 mb-4 text-success"><i class="fa-solid fa-wheat-awn me-2"></i>Farm Profile</h4>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label for="land_size" class="form-label form-label-custom">Land Size (in Hectares) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" name="land_size" id="land_size" class="form-control form-control-custom" placeholder="e.g. 1.5" min="0" required>
+                            <small class="text-muted d-block mt-1">1 Hectare ≈ 2.47 Acres.</small>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="crop_type" class="form-label form-label-custom">Crops Grown <span class="text-danger">*</span></label>
+                            <input type="text" name="crop_type" id="crop_type" class="form-control form-control-custom" placeholder="e.g. Rice, Wheat, Cotton" required>
+                            <small class="text-muted d-block mt-1">Comma-separated crops.</small>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="annual_income" class="form-label form-label-custom">Annual Household Income (₹) <span class="text-danger">*</span></label>
+                            <input type="number" name="annual_income" id="annual_income" class="form-control form-control-custom" placeholder="e.g. 120000" min="0" required>
+                            <small class="text-muted d-block mt-1">Combined total income.</small>
+                        </div>
+                    </div>
+
+                    <!-- Section: Account Password -->
+                    <h4 class="border-bottom pb-2 mb-4 text-success"><i class="fa-solid fa-key me-2"></i>Security</h4>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label form-label-custom">Password <span class="text-danger">*</span></label>
+                        <input type="password" name="password" id="password" class="form-control form-control-custom" placeholder="Min. 6 characters" required>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary-custom btn-lg">
+                            <i class="fa-solid fa-square-check me-2"></i> Complete Registration
+                        </button>
+                    </div>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="mb-1 text-muted">Already registered?</p>
+                    <a href="{{ url_for('auth.login') }}" class="fw-semibold text-success">
+                        <i class="fa-solid fa-sign-in-alt me-1"></i> Log In Here
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Enable Bootstrap tooltips if any are present
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %}

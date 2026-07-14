@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Farmer Dashboard - KrishiSahay AI{% endblock %}
+
+{% block content %}
+<div class="container py-4 mt-3">
+    <!-- Header Section -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <h1 class="h2 mb-1">Namaste, {{ current_user.full_name }}!</h1>
+            <p class="text-muted">Welcome to your KrishiSahay AI agricultural portal.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{{ url_for('schemes.check_user_eligibility') }}" class="btn btn-primary-custom">
+                <i class="fa-solid fa-calculator me-2"></i> Check My Eligibility
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card p-3 dash-card h-100">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-muted text-uppercase small mb-1">Eligible Schemes</h6>
+                        <h2 class="fw-bold mb-0 text-success">{{ eligible_count }}</h2>
+                    </div>
+                    <div class="icon-circle bg-success text-white mb-0">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small">
+                    <a href="{{ url_for('schemes.check_user_eligibility') }}" class="text-success fw-semibold">
+                        View Eligible Schemes <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-3 dash-card earth h-100">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-muted text-uppercase small mb-1">Close Matches</h6>
+                        <h2 class="fw-bold mb-0 text-warning">{{ partial_count }}</h2>
+                    </div>
+                    <div class="icon-circle bg-warning text-white mb-0">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small">
+                    <a href="{{ url_for('schemes.check_user_eligibility') }}#partial" class="text-success fw-semibold">
+                        Identify criteria gaps <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-3 dash-card orange h-100">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-muted text-uppercase small mb-1">Scanned Docs</h6>
+                        <h2 class="fw-bold mb-0 text-primary">{{ recent_uploads|length }}</h2>
+                    </div>
+                    <div class="icon-circle bg-primary text-white mb-0">
+                        <i class="fa-solid fa-file-invoice"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small">
+                    <a href="{{ url_for('upload.upload_center') }}" class="text-success fw-semibold">
+                        Go to Upload Center <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Grid: Profile and Previews -->
+    <div class="row g-4">
+        <!-- Farmer Profile Summary Card -->
+        <div class="col-lg-5">
+            <div class="card-custom p-4 bg-white h-100">
+                <div class="d-flex align-items-center gap-3 border-bottom pb-3 mb-3">
+                    <div class="bg-light p-3 rounded-circle text-success">
+                        <i class="fa-solid fa-id-card-clip fa-2x"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-0 text-dark">Farm Profile</h4>
+                        <small class="text-muted">Farmer ID: {{ current_user.farmer_id or "Not Provided" }}</small>
+                    </div>
+                </div>
+                
+                <table class="table table-borderless align-middle mb-4">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted py-2"><i class="fa-solid fa-user me-2 text-success"></i>Age:</td>
+                            <td class="fw-semibold text-end">{{ current_user.age }} years</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2"><i class="fa-solid fa-phone me-2 text-success"></i>Mobile:</td>
+                            <td class="fw-semibold text-end">{{ current_user.mobile_number }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2"><i class="fa-solid fa-location-dot me-2 text-success"></i>Location:</td>
+                            <td class="fw-semibold text-end text-truncate" style="max-width: 180px;">{{ current_user.village }}, {{ current_user.district }}, {{ current_user.state }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2"><i class="fa-solid fa-chart-area me-2 text-success"></i>Land Owned:</td>
+                            <td class="fw-semibold text-end text-success">{{ current_user.land_size }} Hectares</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2"><i class="fa-solid fa-wheat-awn me-2 text-success"></i>Crops Grown:</td>
+                            <td class="fw-semibold text-end text-truncate" style="max-width: 180px;">{{ current_user.crop_type }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2"><i class="fa-solid fa-wallet me-2 text-success"></i>Annual Income:</td>
+                            <td class="fw-semibold text-end text-success">₹{{ current_user.annual_income|round|int }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="d-grid gap-2">
+                    <!-- Note: In production this would trigger a profile editing modal -->
+                    <button class="btn btn-outline-custom btn-sm" onclick="alert('Profile updates are locked for security verification. Please contact support to update details.');">
+                        <i class="fa-solid fa-user-pen me-2"></i> Request Profile Edit
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Eligible Schemes Preview -->
+        <div class="col-lg-7">
+            <div class="card-custom p-4 bg-white h-100">
+                <div class="d-flex align-items-center justify-content-between border-bottom pb-3 mb-4">
+                    <h4 class="mb-0"><i class="fa-solid fa-award text-success me-2"></i>Recommended for You</h4>
+                    <span class="badge bg-success-subtle text-success fs-6">Matches Available</span>
+                </div>
+
+                {% if top_eligible %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for item in top_eligible %}
+                            <div class="p-3 rounded border bg-light position-relative">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="mb-0 text-success-emphasis text-truncate" style="max-width: 80%;">{{ item.scheme.name }}</h5>
+                                    <span class="badge bg-success">{{ item.score }}% Match</span>
+                                </div>
+                                <p class="text-muted small mb-3 text-truncate-3">{{ item.scheme.description }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-secondary-subtle text-secondary small">{{ item.scheme.category }}</span>
+                                    <a href="{{ url_for('schemes.detail', scheme_id=item.scheme.id) }}" class="btn btn-sm btn-outline-custom py-1 px-3">
+                                        View Steps <i class="fa-solid fa-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('schemes.check_user_eligibility') }}" class="btn btn-primary-custom btn-sm px-4">
+                            See Complete Breakdown
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fa-solid fa-triangle-exclamation text-warning fa-3x mb-3"></i>
+                        <h5>No Direct Scheme Matches Found</h5>
+                        <p class="text-muted small mx-auto" style="max-width: 400px;">
+                            Try updating crop details, location criteria, or upload your records. Some state-level programs may require manual validation.
+                        </p>
+                        <a href="{{ url_for('schemes.list_schemes') }}" class="btn btn-outline-custom mt-2">
+                            Browse All Schemes
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

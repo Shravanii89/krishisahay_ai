@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}{{ scheme.name }} - Scheme Details{% endblock %}
+
+{% block content %}
+<div class="container py-4 mt-3">
+    <!-- Breadcrumbs / Back button -->
+    <div class="mb-4">
+        <a href="{{ url_for('schemes.list_schemes') }}" class="btn btn-sm btn-outline-custom">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Catalog
+        </a>
+    </div>
+
+    <!-- Scheme Header Card -->
+    <div class="card-custom p-4 bg-white border-0 shadow-sm mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <span class="badge bg-success-subtle text-success mb-2 px-3 py-2 fs-6">{{ scheme.category }}</span>
+                <h1 class="h2 text-success-emphasis fw-bold mb-1">{{ scheme.name }}</h1>
+                <p class="text-muted mb-0">Scope: <span class="fw-semibold text-dark">{{ scheme.state_specific or 'All India' }}</span></p>
+            </div>
+            
+            {% if current_user.is_authenticated %}
+                <div class="text-end">
+                    {% if eligibility.is_eligible %}
+                        <div class="alert alert-success d-inline-block mb-0 px-4 py-2">
+                            <i class="fa-solid fa-circle-check me-2"></i><strong>You are Eligible</strong>
+                        </div>
+                    {% elif eligibility.score > 0 %}
+                        <div class="alert alert-warning d-inline-block mb-0 px-4 py-2">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i><strong>{{ eligibility.score }}% Match</strong> (Missing details)
+                        </div>
+                    {% else %}
+                        <div class="alert alert-danger d-inline-block mb-0 px-4 py-2">
+                            <i class="fa-solid fa-circle-xmark me-2"></i><strong>Ineligible</strong>
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div>
+                    <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-primary-custom">
+                        <i class="fa-solid fa-calculator me-2"></i> Login to Check Eligibility
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <hr class="my-4">
+        
+        <h5 class="text-success"><i class="fa-solid fa-info-circle me-2"></i>Description</h5>
+        <p class="lead fs-6 text-dark">{{ scheme.description }}</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main details -->
+        <div class="col-lg-8">
+            <!-- Benefits Card -->
+            <div class="card-custom p-4 bg-white mb-4 shadow-sm border-0">
+                <h3 class="h4 mb-3 text-success-emphasis border-bottom pb-2">
+                    <i class="fa-solid fa-gift text-success me-2"></i>Benefits
+                </h3>
+                <div class="bg-light p-3 rounded text-dark fs-6" style="white-space: pre-line;">
+                    {{ scheme.benefits }}
+                </div>
+            </div>
+
+            <!-- Application Steps -->
+            <div class="card-custom p-4 bg-white mb-4 shadow-sm border-0">
+                <h3 class="h4 mb-3 text-success-emphasis border-bottom pb-2">
+                    <i class="fa-solid fa-list-ol text-success me-2"></i>How to Apply
+                </h3>
+                <ol class="list-group list-group-numbered list-group-flush">
+                    {% for step in scheme.get_steps_list() %}
+                        <li class="list-group-item bg-transparent text-dark border-0 py-3 ps-0">
+                            {{ step }}
+                        </li>
+                    {% endfor %}
+                </ol>
+            </div>
+
+            <!-- Action Button -->
+            {% if scheme.official_link %}
+                <div class="text-center mt-4">
+                    <a href="{{ scheme.official_link }}" target="_blank" class="btn btn-primary-custom btn-lg w-100">
+                        <i class="fa-solid fa-globe me-2"></i> Go to Official Registration Portal
+                    </a>
+                    <small class="text-muted d-block mt-2">This links to the verified official government portal for direct application.</small>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar documents and eligibility check -->
+        <div class="col-lg-4">
+            <!-- Required Documents Check -->
+            <div class="card-custom p-4 bg-white mb-4 shadow-sm border-0">
+                <h3 class="h4 mb-3 text-success-emphasis border-bottom pb-2">
+                    <i class="fa-solid fa-file-shield text-success me-2"></i>Required Documents
+                </h3>
+                <ul class="list-group list-group-flush">
+                    {% for doc in scheme.get_documents_list() %}
+                        <li class="list-group-item bg-transparent text-dark border-0 py-2 ps-0">
+                            <i class="fa-solid fa-circle-notch text-success me-2"></i>{{ doc }}
+                        </li>
+                    {% endfor %}
+                </ul>
+                <div class="mt-4 d-grid">
+                    <a href="{{ url_for('upload.upload_center') }}" class="btn btn-secondary-custom btn-sm">
+                        <i class="fa-solid fa-camera me-2"></i> Scan & Verify Docs
+                    </a>
+                </div>
+            </div>
+
+            <!-- In-Depth Eligibility Checklist (If Logged In) -->
+            {% if current_user.is_authenticated %}
+                <div class="card-custom p-4 bg-white shadow-sm border-0">
+                    <h3 class="h4 mb-3 text-success-emphasis border-bottom pb-2">
+                        <i class="fa-solid fa-clipboard-list text-success me-2"></i>Rule Details
+                    </h3>
+                    
+                    <div class="d-flex flex-column gap-3 mt-3">
+                        <!-- Age Check -->
+                        <div class="d-flex justify-content-between align-items-start border-bottom pb-2">
+                            <div>
+                                <small class="text-muted d-block">Age Requirement</small>
+                                <span class="fw-semibold">{% if scheme.min_age > 0 %}Min {{ scheme.min_age }} years{% else %}No limit{% endif %}</span>
+                            </div>
+                            <div>
+                                {% if not scheme.min_age or current_user.age >= scheme.min_age %}
+                                    <i class="fa-solid fa-circle-check text-success fa-lg"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-circle-xmark text-danger fa-lg"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Land Size Check -->
+                        <div class="d-flex justify-content-between align-items-start border-bottom pb-2">
+                            <div>
+                                <small class="text-muted d-block">Max Land Limit</small>
+                                <span class="fw-semibold">{% if scheme.max_land_size %}{{ scheme.max_land_size }} Hectares{% else %}No limit{% endif %}</span>
+                            </div>
+                            <div>
+                                {% if not scheme.max_land_size or current_user.land_size <= scheme.max_land_size %}
+                                    <i class="fa-solid fa-circle-check text-success fa-lg"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-circle-xmark text-danger fa-lg"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Income Check -->
+                        <div class="d-flex justify-content-between align-items-start border-bottom pb-2">
+                            <div>
+                                <small class="text-muted d-block">Max Income Limit</small>
+                                <span class="fw-semibold">{% if scheme.max_income %}₹{{ scheme.max_income|round|int }}{% else %}No limit{% endif %}</span>
+                            </div>
+                            <div>
+                                {% if not scheme.max_income or current_user.annual_income <= scheme.max_income %}
+                                    <i class="fa-solid fa-circle-check text-success fa-lg"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-circle-xmark text-danger fa-lg"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- State Check -->
+                        <div class="d-flex justify-content-between align-items-start border-bottom pb-2">
+                            <div>
+                                <small class="text-muted d-block">State Specific</small>
+                                <span class="fw-semibold">{{ scheme.state_specific or 'All India' }}</span>
+                            </div>
+                            <div>
+                                {% if not scheme.state_specific or scheme.state_specific.lower() == 'all' or current_user.state.lower() == scheme.state_specific.lower() %}
+                                    <i class="fa-solid fa-circle-check text-success fa-lg"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-circle-xmark text-danger fa-lg"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

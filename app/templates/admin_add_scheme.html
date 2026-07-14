@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Scheme - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4 mt-3">
+    <!-- Back to Admin Dashboard -->
+    <div class="mb-4">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-sm btn-outline-custom">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card-custom p-4 p-md-5 bg-white border-0 shadow-sm mb-4">
+                <h2 class="fw-bold mb-4 text-success-emphasis border-bottom pb-3">
+                    <i class="fa-solid fa-folder-plus text-success me-2"></i>Add Government Scheme
+                </h2>
+
+                <form action="{{ url_for('admin.add_scheme') }}" method="POST">
+                    
+                    <!-- Basic Scheme Info -->
+                    <div class="mb-3">
+                        <label for="name" class="form-label form-label-custom">Scheme Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" id="name" class="form-control form-control-custom" placeholder="e.g. PM Kisan Samman Nidhi Yojana" required>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label for="category" class="form-label form-label-custom">Category <span class="text-danger">*</span></label>
+                            <select name="category" id="category" class="form-select form-control-custom" required>
+                                <option value="" disabled selected>Select Category</option>
+                                <option value="Financial Support">Financial Support</option>
+                                <option value="Crop Insurance">Crop Insurance</option>
+                                <option value="Irrigation">Irrigation</option>
+                                <option value="Equipment & Technology">Equipment & Technology</option>
+                                <option value="Organic Farming">Organic Farming</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="target_category" class="form-label form-label-custom">Target Demographic <span class="text-muted">(Optional)</span></label>
+                            <select name="target_category" id="target_category" class="form-select form-control-custom">
+                                <option value="All" selected>All</option>
+                                <option value="General">General</option>
+                                <option value="OBC">OBC</option>
+                                <option value="SC">SC</option>
+                                <option value="ST">ST</option>
+                                <option value="Small/Marginal">Small/Marginal Farmers</option>
+                                <option value="Women">Women Farmers</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="state_specific" class="form-label form-label-custom">State Specific <span class="text-muted">(Optional)</span></label>
+                            <input type="text" name="state_specific" id="state_specific" class="form-control form-control-custom" placeholder="e.g. Maharashtra or All">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label form-label-custom">Short Description <span class="text-danger">*</span></label>
+                        <textarea name="description" id="description" rows="3" class="form-control form-control-custom" placeholder="Brief details about the program's primary objective..." required></textarea>
+                    </div>
+
+                    <!-- Eligibility Rules -->
+                    <h5 class="mt-4 border-bottom pb-2 text-success"><i class="fa-solid fa-list-check me-2"></i>Eligibility Criteria</h5>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label for="min_age" class="form-label form-label-custom">Min Age Required</label>
+                            <input type="number" name="min_age" id="min_age" class="form-control form-control-custom" placeholder="e.g. 18" value="0">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="max_land_size" class="form-label form-label-custom">Max Land Size (Ha)</label>
+                            <input type="number" step="0.01" name="max_land_size" id="max_land_size" class="form-control form-control-custom" placeholder="e.g. 2.0 (blank for no limit)">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="max_income" class="form-label form-label-custom">Max Income Allowed (₹)</label>
+                            <input type="number" name="max_income" id="max_income" class="form-control form-control-custom" placeholder="e.g. 200000 (blank for no limit)">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="required_crops" class="form-label form-label-custom">Required Crops</label>
+                        <input type="text" name="required_crops" id="required_crops" class="form-control form-control-custom" placeholder="e.g. Cotton, Wheat, Rice (comma-separated, blank for all)">
+                    </div>
+
+                    <!-- Benefits, Steps, Documents -->
+                    <h5 class="mt-4 border-bottom pb-2 text-success"><i class="fa-solid fa-circle-info me-2"></i>Application Details</h5>
+                    
+                    <div class="mb-3">
+                        <label for="benefits" class="form-label form-label-custom">Benefits Details <span class="text-danger">*</span></label>
+                        <textarea name="benefits" id="benefits" rows="3" class="form-control form-control-custom" placeholder="Describe financial or material aids provided (e.g. ₹6,000 yearly in three installments)." required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="required_documents" class="form-label form-label-custom">Required Documents <span class="text-danger">*</span></label>
+                        <textarea name="required_documents" id="required_documents" rows="3" class="form-control form-control-custom" placeholder="Enter list of documents needed (one per line, e.g. Aadhaar Card, Land ownership certificate/Patta)." required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="application_steps" class="form-label form-label-custom">Application Process Steps <span class="text-danger">*</span></label>
+                        <textarea name="application_steps" id="application_steps" rows="3" class="form-control form-control-custom" placeholder="Step-by-step application instructions (one step per line)." required></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="official_link" class="form-label form-label-custom">Official Portal Web Address</label>
+                        <input type="url" name="official_link" id="official_link" class="form-control form-control-custom" placeholder="https://pmkisan.gov.in">
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary-custom btn-lg">
+                            <i class="fa-solid fa-square-plus me-2"></i> Save Scheme to Database
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

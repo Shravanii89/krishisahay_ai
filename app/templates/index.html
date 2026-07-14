@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}KrishiSahay AI - Smart Scheme Discoverer for Indian Farmers{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7 text-center text-lg-start">
+                <div class="hero-badge animate__animated animate__fadeInDown">
+                    <i class="fa-solid fa-star text-warning"></i> Empowering Indian Agriculture with AI
+                </div>
+                <h1 class="display-4 fw-bold text-success-emphasis mb-3">
+                    Discover Government Schemes You Qualify For Instantly
+                </h1>
+                <p class="lead text-muted mb-4">
+                    KrishiSahay AI helps farmers across India match their land, crops, and location with matching subsidies, insurance policies, and cash benefits from the Government of India.
+                </p>
+                <div class="d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-lg-start">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary-custom btn-lg">
+                        <i class="fa-solid fa-user-plus me-2"></i> Register as Farmer
+                    </a>
+                    <a href="{{ url_for('schemes.list_schemes') }}" class="btn btn-secondary-custom btn-lg">
+                        <i class="fa-solid fa-magnifying-glass me-2"></i> Explore Database
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 text-center">
+                <!-- Premium visual card matching the agricultural theme -->
+                <div class="card-custom p-4 bg-white shadow-lg border-0 text-start position-relative">
+                    <div class="position-absolute top-0 end-0 m-3 text-success opacity-10">
+                        <i class="fa-solid fa-tractor fa-8x"></i>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="bg-success text-white p-3 rounded-circle">
+                            <i class="fa-solid fa-brain fa-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-0 text-success">KrishiSahay Assistant</h4>
+                            <small class="text-muted">Online & AI-Ready</small>
+                        </div>
+                    </div>
+                    <blockquote class="blockquote fs-6 text-dark bg-light p-3 rounded border-start border-success border-3 mb-3">
+                        "Scan your land record (Patta) or type your crop types. I will immediately check if you qualify for ₹6,000 yearly income support, high-tech tractor subsidies, or crop insurance."
+                    </blockquote>
+                    <div class="d-grid">
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-custom">
+                            <i class="fa-solid fa-lock-open me-2"></i> Log In to Ask
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 mt-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1">How It Works</h2>
+            <p class="text-muted">Three simple steps to unlock your government benefits</p>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <!-- Step 1 -->
+            <div class="col-md-4 text-center">
+                <div class="card-custom p-4 h-100 d-flex flex-column align-items-center">
+                    <div class="icon-circle">
+                        <i class="fa-solid fa-id-card"></i>
+                    </div>
+                    <h4>1. Set Up Profile</h4>
+                    <p class="text-muted small">Enter your age, location, land size in hectares, and the crops you grow. Your data remains completely secure.</p>
+                </div>
+            </div>
+            <!-- Step 2 -->
+            <div class="col-md-4 text-center">
+                <div class="card-custom p-4 h-100 d-flex flex-column align-items-center">
+                    <div class="icon-circle">
+                        <i class="fa-solid fa-gears"></i>
+                    </div>
+                    <h4>2. Smart Rule Engine</h4>
+                    <p class="text-muted small">Our algorithm automatically matches your farm details against eligibility constraints (state boundaries, crop matching, income caps).</p>
+                </div>
+            </div>
+            <!-- Step 3 -->
+            <div class="col-md-4 text-center">
+                <div class="card-custom p-4 h-100 d-flex flex-column align-items-center">
+                    <div class="icon-circle">
+                        <i class="fa-solid fa-file-invoice"></i>
+                    </div>
+                    <h4>3. Discover & Apply</h4>
+                    <p class="text-muted small">Access links, document checklists, and application steps. Print your summary or show it at your regional Common Service Centre (CSC).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="py-5 bg-white border-top border-bottom">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-md-6 text-center">
+                <div class="bg-light p-4 rounded-circle d-inline-block shadow-sm">
+                    <i class="fa-solid fa-wheat-awn text-success fa-10x"></i>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h2 class="mb-4">Why KrishiSahay AI?</h2>
+                <p>Millions of Indian farmers remain unaware of financial support schemes because of complex guidelines, language barriers, and fragmented information portals.</p>
+                <p><strong>KrishiSahay AI</strong> bridges this gap by offering a central, farmer-friendly eligibility platform. The architecture is prepared to integrate speech-to-text inputs (for local dialects) and picture OCR scanners using Gemini models, making it simple even for low-literacy users in future releases.</p>
+                <div class="mt-4">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary-custom">
+                        Create Your Account Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQs Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2>Frequently Asked Questions (FAQs)</h2>
+            <p class="text-muted">Quick answers to common questions about agricultural support schemes</p>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="accordion" id="faqAccordion">
+                    <!-- FAQ 1 -->
+                    <div class="accordion-item card-custom border-0 mb-3 overflow-hidden shadow-sm">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button bg-white text-success fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                Who is eligible for PM-KISAN?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body bg-white text-muted small">
+                                Under PM-KISAN, small and marginal landholding farmer families having cultivable land up to 2 hectares are eligible for income support of ₹6,000 per year, paid in three equal installments. (Note: State exclusions apply).
+                            </div>
+                        </div>
+                    </div>
+                    <!-- FAQ 2 -->
+                    <div class="accordion-item card-custom border-0 mb-3 overflow-hidden shadow-sm">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed bg-white text-success fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                What is PM Fasal Bima Yojana (PMFBY)?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body bg-white text-muted small">
+                                PMFBY is a crop insurance scheme. It provides insurance coverage and financial support to farmers in the event of failure of any of the notified crops as a result of natural calamities, pests & diseases.
+                            </div>
+                        </div>
+                    </div>
+                    <!-- FAQ 3 -->
+                    <div class="accordion-item card-custom border-0 mb-3 overflow-hidden shadow-sm">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed bg-white text-success fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                How does the document scanner work?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body bg-white text-muted small">
+                                You can upload photos of your Aadhaar card or Land record. Our backend includes a mock AI service replicating Gemini Vision that verifies details and logs them directly to check if they match your profile parameters.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="py-5 bg-light border-top">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 text-center">
+                <h2>Have Questions? Contact Us</h2>
+                <p class="text-muted">Fill out this quick form and our cooperative team will reach out to you.</p>
+                <div class="card-custom p-4 bg-white mt-4 text-start">
+                    <form action="#" method="POST" onsubmit="alert('Thank you for contacting us! We will get in touch shortly.'); return false;">
+                        <div class="mb-3">
+                            <label class="form-label form-label-custom">Full Name</label>
+                            <input type="text" class="form-control form-control-custom" placeholder="e.g. Rajesh Kumar" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label form-label-custom">Mobile Number</label>
+                            <input type="tel" class="form-control form-control-custom" placeholder="e.g. 9876543210" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label form-label-custom">Message</label>
+                            <textarea class="form-control form-control-custom" rows="3" placeholder="Tell us what help you need..." required></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary-custom">Submit Form</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

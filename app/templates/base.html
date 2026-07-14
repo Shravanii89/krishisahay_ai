@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="KrishiSahay AI - Smart Government Scheme Discovery and AI Eligibility Advisor for Indian Farmers. Discover schemes, check qualifications, and upload documents.">
+    <title>{% block title %}KrishiSahay AI - Indian Farmer Scheme Portal{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome for Agriculture & General Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container">
+            <a class="navbar-brand navbar-brand-custom" href="{{ url_for('dashboard.landing') }}">
+                <i class="fa-solid fa-seedling text-success"></i> KrishiSahay <span>AI</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold text-success-emphasis" href="{{ url_for('schemes.list_schemes') }}">
+                            <i class="fa-solid fa-search me-1"></i> Search Schemes
+                        </a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold text-success-emphasis" href="{{ url_for('schemes.check_user_eligibility') }}">
+                            <i class="fa-solid fa-award me-1"></i> My Eligibility
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold" href="{{ url_for('chatbot.ask_ai') }}" style="color:#e65100;">
+                            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Ask AI
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold text-success-emphasis" href="{{ url_for('upload.upload_center') }}">
+                            <i class="fa-solid fa-upload me-1"></i> Scan Documents
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <div class="d-flex align-items-center gap-3">
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-custom">
+                            <i class="fa-solid fa-user me-1"></i> {{ current_user.full_name.split(' ')[0] }}
+                        </a>
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-sm btn-outline-secondary" title="Admin Portal">
+                            <i class="fa-solid fa-lock"></i>
+                        </a>
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary-custom">
+                            <i class="fa-solid fa-sign-out-alt me-1"></i> Logout
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-custom">
+                            <i class="fa-solid fa-sign-in-alt me-1"></i> Login
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary-custom">
+                            <i class="fa-solid fa-user-plus me-1"></i> Register
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show card-custom border-0 shadow-sm" role="alert">
+                        <div class="d-flex align-items-center">
+                            {% if category == 'success' %}
+                                <i class="fa-solid fa-circle-check text-success fa-lg me-2"></i>
+                            {% elif category == 'danger' or category == 'error' %}
+                                <i class="fa-solid fa-circle-exclamation text-danger fa-lg me-2"></i>
+                            {% else %}
+                                <i class="fa-solid fa-circle-info text-info fa-lg me-2"></i>
+                            {% endif %}
+                            <div>{{ message }}</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Block -->
+    <main class="min-vh-100">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <h3 class="text-white mb-3"><i class="fa-solid fa-seedling text-success-emphasis me-2"></i>KrishiSahay AI</h3>
+                    <p class="small text-white-50">Empowering Indian farmers by matching farm profiles with government aid programs, crop protection benefits, and agricultural subsidies through smart automated systems.</p>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="text-white mb-3">Quick Navigation</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('schemes.list_schemes') }}"><i class="fa-solid fa-chevron-right small me-2"></i>Browse Schemes</a></li>
+                        {% if current_user.is_authenticated %}
+                            <li><a href="{{ url_for('dashboard.index') }}"><i class="fa-solid fa-chevron-right small me-2"></i>Farmer Dashboard</a></li>
+                            <li><a href="{{ url_for('chatbot.ask_ai') }}"><i class="fa-solid fa-chevron-right small me-2"></i>Ask AI Assistant</a></li>
+                            <li><a href="{{ url_for('upload.upload_center') }}"><i class="fa-solid fa-chevron-right small me-2"></i>Upload Center</a></li>
+                        {% else %}
+                            <li><a href="{{ url_for('auth.login') }}"><i class="fa-solid fa-chevron-right small me-2"></i>Login</a></li>
+                            <li><a href="{{ url_for('auth.register') }}"><i class="fa-solid fa-chevron-right small me-2"></i>Register</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('admin.dashboard') }}"><i class="fa-solid fa-chevron-right small me-2"></i>Admin Dashboard</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-12">
+                    <h5 class="text-white mb-3">Support & Helpline</h5>
+                    <p class="small text-white-50">Have questions about government benefits? Reach our volunteer line.</p>
+                    <p class="mb-1"><i class="fa-solid fa-phone me-2 text-success-emphasis"></i> 1800-180-1551 (Farmer Helpline)</p>
+                    <p><i class="fa-solid fa-envelope me-2 text-success-emphasis"></i> support@krishisahay.org</p>
+                </div>
+            </div>
+            <hr class="my-4 bg-white opacity-25">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="small text-white-50 mb-0">&copy; 2026 KrishiSahay AI. Developed to benefit the farming communities of India.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
+                    <span class="badge bg-success text-white">English / Hindi Ready</span>
+                    <span class="badge bg-secondary text-white">Gemini Sandbox Enabled</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

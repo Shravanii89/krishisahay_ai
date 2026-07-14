@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Document Upload & AI Scan - KrishiSahay AI{% endblock %}
+
+{% block content %}
+<div class="container py-4 mt-3">
+    <!-- Header -->
+    <div class="mb-5">
+        <h1 class="h2 mb-1"><i class="fa-solid fa-cloud-arrow-up text-success me-2"></i>Document Scan Center</h1>
+        <p class="text-muted">Upload photos of land records, ID cards, audio explanations, or video status updates for automated AI extraction.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Upload Form -->
+        <div class="col-lg-5">
+            <div class="card-custom p-4 bg-white shadow-sm border-0">
+                <h4 class="mb-4 text-success-emphasis border-bottom pb-2">
+                    <i class="fa-solid fa-camera me-2 text-success"></i>Upload Document
+                </h4>
+                
+                <form action="{{ url_for('upload.upload_center') }}" method="POST" enctype="multipart/form-data" id="uploadForm" onsubmit="startUploadLoader()">
+                    <!-- Hidden file field -->
+                    <input type="file" name="document" id="documentFileInput" class="d-none" required>
+
+                    <!-- Drag and Drop Wrapper -->
+                    <div class="upload-dropzone mb-4" id="uploadDropzone">
+                        <i class="fa-solid fa-file-invoice text-success fa-3x mb-3" id="dropzoneIcon"></i>
+                        <h5 class="fw-bold" id="dropzoneText">Drag & Drop file here or Click to select</h5>
+                        <p class="text-muted small mb-0">Supported file formats: PNG, JPG, WEBP, MP3, MP4, PDF, TXT (Max size 16MB)</p>
+                    </div>
+
+                    <!-- Scan button wrapper (hidden by default until file chosen) -->
+                    <div id="uploadActionWrapper" class="d-none d-grid gap-2">
+                        <button type="submit" class="btn btn-primary-custom" id="uploadSubmitBtn">
+                            <i class="fa-solid fa-microscope me-2"></i> Scan with KrishiSahay AI
+                        </button>
+                        <small class="text-muted text-center">Using Gemini 1.5 Flash mockup integration</small>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Scanned History & Insights -->
+        <div class="col-lg-7">
+            <div class="card-custom p-4 bg-white shadow-sm border-0">
+                <h4 class="mb-4 text-success-emphasis border-bottom pb-2">
+                    <i class="fa-solid fa-clock-rotate-left me-2 text-success"></i>Scan History & AI Insights
+                </h4>
+
+                {% if uploads %}
+                    <div class="d-flex flex-column gap-4">
+                        {% for item in uploads %}
+                            <div class="p-3 border rounded bg-light">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <h6 class="mb-0 text-dark text-truncate" style="max-width: 250px;">
+                                            <i class="fa-solid fa-file-lines text-success me-2"></i>{{ item.record.file_path.split('/')[-1].split('\\')[-1].replace('user_' ~ current_user.id ~ '_', '') }}
+                                        </h6>
+                                        <small class="text-muted">{{ item.record.uploaded_at.strftime('%d-%b-%Y %I:%M %p') }}</small>
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-secondary-subtle text-secondary me-2">{{ item.record.file_type.capitalize() }}</span>
+                                        {% if item.record.ai_status == 'Completed' %}
+                                            <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i>Scanned</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark"><i class="fa-solid fa-spinner fa-spin me-1"></i>Processing</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                {% if item.record.ai_status == 'Completed' and item.details %}
+                                    <div class="bg-white p-3 rounded border border-success-subtle">
+                                        <div class="d-flex align-items-center gap-2 mb-2 text-success">
+                                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                            <h6 class="mb-0 fw-bold small">AI Verification Output</h6>
+                                        </div>
+                                        
+                                        <p class="text-dark small mb-3">{{ item.details.get('summary', 'Document analyzed successfully.') }}</p>
+                                        
+                                        {% if item.details.get('extracted_data') %}
+                                            <div class="border-top pt-2">
+                                                <small class="fw-semibold text-muted d-block mb-1">Extracted Metadata:</small>
+                                                <div class="row g-2">
+                                                    {% for k, v in item.details.get('extracted_data').items() %}
+                                                        <div class="col-6">
+                                                            <span class="d-block text-muted small text-uppercase" style="font-size: 0.75rem;">{{ k.replace('_', ' ') }}</span>
+                                                            <span class="fw-semibold text-dark small">{{ v }}</span>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        {% if item.details.get('transcription') %}
+                                            <div class="border-top pt-2">
+                                                <small class="fw-semibold text-muted d-block mb-1">Voice Transcription:</small>
+                                                <blockquote class="blockquote small text-muted bg-light p-2 rounded mb-0">
+                                                    "{{ item.details.get('transcription') }}"
+                                                </blockquote>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <div class="bg-white p-3 rounded border border-warning-subtle text-center">
+                                        <small class="text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>AI is currently parsing this file. Please wait.</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fa-solid fa-folder-open text-muted fa-3x mb-3"></i>
+                        <h5>No Documents Uploaded</h5>
+                        <p class="text-muted small mx-auto" style="max-width: 400px;">
+                            Upload your Aadhaar ID or land possession records. Our AI parses parameters to quickly check eligibility constraints.
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

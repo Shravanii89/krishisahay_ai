@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}My Eligibility Report - KrishiSahay AI{% endblock %}
+
+{% block content %}
+<div class="container py-4 mt-3">
+    <!-- Header -->
+    <div class="mb-4">
+        <h1 class="h2 mb-1"><i class="fa-solid fa-calculator text-success me-2"></i>My Eligibility Report</h1>
+        <p class="text-muted">Personalized eligibility matching for {{ current_user.full_name }}</p>
+    </div>
+
+    <!-- AI Advisor Card -->
+    {% if ai_summary %}
+        <div class="card-custom p-4 bg-white shadow-sm border-0 mb-5 position-relative overflow-hidden" style="background: linear-gradient(135deg, #ffffff 70%, #e8f5e9 100%);">
+            <div class="position-absolute bottom-0 end-0 m-3 text-success opacity-10">
+                <i class="fa-solid fa-brain fa-6x"></i>
+            </div>
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="badge bg-success-subtle text-success p-2 px-3 fs-6 rounded-pill">
+                    <i class="fa-solid fa-wand-magic-sparkles text-success me-1"></i> KrishiSahay Smart Advisor AI
+                </span>
+            </div>
+            <div class="lh-lg fs-6 text-dark" style="white-space: pre-wrap;">
+                {{ ai_summary | safe }}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Navigation tabs or quick anchors -->
+    <div class="mb-4">
+        <ul class="nav nav-pills gap-2" id="eligibilityTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active btn-outline-custom border-0 rounded-pill" id="eligible-tab" data-bs-toggle="tab" data-bs-target="#eligible-content" type="button" role="tab" aria-controls="eligible-content" aria-selected="true">
+                    <i class="fa-solid fa-circle-check me-1"></i> Qualified Schemes ({{ eligible|length }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link btn-outline-custom border-0 rounded-pill" id="partial-tab" data-bs-toggle="tab" data-bs-target="#partial-content" type="button" role="tab" aria-controls="partial-content" aria-selected="false">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Close Matches ({{ partially_eligible|length }})
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Tab Contents -->
+    <div class="tab-content mt-4" id="eligibilityTabContent">
+        <!-- Eligible Schemes Panel -->
+        <div class="tab-pane fade show active" id="eligible-content" role="tabpanel" aria-labelledby="eligible-tab">
+            {% if eligible %}
+                <div class="row g-4">
+                    {% for item in eligible %}
+                        <div class="col-12">
+                            <div class="card p-4 dash-card bg-white h-100">
+                                <div class="row align-items-start g-3">
+                                    <div class="col-md-8">
+                                        <span class="badge bg-secondary-subtle text-secondary mb-2">{{ item.scheme.category }}</span>
+                                        <h4 class="text-success-emphasis mb-2">{{ item.scheme.name }}</h4>
+                                        <p class="text-muted small mb-3">{{ item.scheme.description }}</p>
+                                        
+                                        <!-- Qualification breakdown -->
+                                        <div class="bg-light p-3 rounded mb-3">
+                                            <h6 class="small fw-bold text-success mb-2"><i class="fa-solid fa-circle-check me-2"></i>Why you qualify:</h6>
+                                            <ul class="list-unstyled mb-0 row g-2">
+                                                {% for reason in item.reasons %}
+                                                    <li class="col-md-6 small text-muted"><i class="fa-solid fa-check text-success me-2"></i>{{ reason }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+
+                                        <!-- Expanded Details -->
+                                        <div class="mt-3">
+                                            <button class="btn btn-sm btn-outline-success border-0 rounded-pill mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ item.scheme.id }}" aria-expanded="false" aria-controls="details-{{ item.scheme.id }}">
+                                                <i class="fa-solid fa-chevron-down me-1"></i> View Full Details & Apply
+                                            </button>
+                                            
+                                            <div class="collapse mt-2" id="details-{{ item.scheme.id }}">
+                                                <div class="card card-body bg-light border-0">
+                                                    <!-- Benefits -->
+                                                    <div class="mb-3">
+                                                        <h6 class="fw-bold text-dark"><i class="fa-solid fa-hand-holding-dollar text-success me-2"></i>Benefits</h6>
+                                                        <p class="small text-muted mb-0">{{ item.scheme.benefits }}</p>
+                                                    </div>
+                                                    
+                                                    <!-- Documents -->
+                                                    <div class="mb-3">
+                                                        <h6 class="fw-bold text-dark"><i class="fa-solid fa-file-invoice text-success me-2"></i>Required Documents</h6>
+                                                        <ul class="small text-muted ps-3 mb-0">
+                                                            {% for doc in item.scheme.get_documents_list() %}
+                                                                <li>{{ doc }}</li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    </div>
+                                                    
+                                                    <!-- Application Process -->
+                                                    <div class="mb-3">
+                                                        <h6 class="fw-bold text-dark"><i class="fa-solid fa-list-ol text-success me-2"></i>Application Process</h6>
+                                                        <ol class="small text-muted ps-3 mb-0">
+                                                            {% for step in item.scheme.get_steps_list() %}
+                                                                <li class="mb-1">{{ step }}</li>
+                                                            {% endfor %}
+                                                        </ol>
+                                                    </div>
+                                                    
+                                                    <!-- Apply Button -->
+                                                    {% if item.scheme.official_link %}
+                                                    <div class="mt-3">
+                                                        <a href="{{ item.scheme.official_link }}" target="_blank" class="btn btn-primary-custom w-100 rounded-pill">
+                                                            <i class="fa-solid fa-globe ms-1"></i> Apply on Official Government Site 
+                                                        </a>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-md-end d-flex flex-column justify-content-start h-100">
+                                        <div>
+                                            <span class="badge bg-success p-2 px-3 fs-6 rounded-pill mb-3">{{ item.score }}% Eligibility Match</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5 bg-white card-custom">
+                    <i class="fa-solid fa-circle-xmark text-muted fa-4x mb-3"></i>
+                    <h3>No Schemes Match Your Profile</h3>
+                    <p class="text-muted">We couldn't match any schemes to your parameters. Consider browsing all schemas to check manually.</p>
+                    <a href="{{ url_for('schemes.list_schemes') }}" class="btn btn-outline-custom mt-2">Browse All Schemes</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Partially Eligible Panel -->
+        <div class="tab-pane fade" id="partial-content" role="tabpanel" aria-labelledby="partial-tab">
+            {% if partially_eligible %}
+                <div class="row g-4">
+                    {% for item in partially_eligible %}
+                        <div class="col-12">
+                            <div class="card p-4 dash-card earth bg-white h-100">
+                                <div class="row align-items-start g-3">
+                                    <div class="col-md-8">
+                                        <span class="badge bg-secondary-subtle text-secondary mb-2">{{ item.scheme.category }}</span>
+                                        <h4 class="text-success-emphasis mb-2">{{ item.scheme.name }}</h4>
+                                        <p class="text-muted small mb-3">{{ item.scheme.description }}</p>
+                                        
+                                        <!-- Missing criteria breakdown -->
+                                        <div class="bg-light p-3 rounded mb-3">
+                                            <h6 class="small fw-bold text-warning mb-2"><i class="fa-solid fa-triangle-exclamation me-2 text-warning"></i>Missing Requirements:</h6>
+                                            <ul class="list-unstyled mb-0 row g-2">
+                                                {% for gap in item.gaps %}
+                                                    <li class="col-md-12 small text-muted"><i class="fa-solid fa-xmark text-danger me-2"></i>{{ gap }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-md-end d-flex flex-column justify-content-between h-100">
+                                        <div>
+                                            <span class="badge bg-warning text-dark p-2 px-3 fs-6 rounded-pill mb-3">{{ item.score }}% Eligibility Match</span>
+                                        </div>
+                                        <div class="mt-4 d-grid">
+                                            <a href="{{ url_for('schemes.detail', scheme_id=item.scheme.id) }}" class="btn btn-outline-custom btn-sm">
+                                                Inspect Detailed Rules
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5 bg-white card-custom">
+                    <i class="fa-solid fa-circle-check text-success fa-4x mb-3"></i>
+                    <h3>No Partially Eligible Schemes</h3>
+                    <p class="text-muted">You either fully qualify for all available schemes or do not match any of them.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Schemes - KrishiSahay AI{% endblock %}
+
+{% block content %}
+<div class="container py-4 mt-3">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="h2 mb-1">Government Schemes Directory</h1>
+        <p class="text-muted">Search and filter active agricultural aid programs across India</p>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="card-custom p-4 bg-white mb-5 shadow-sm border-0">
+        <form action="{{ url_for('schemes.list_schemes') }}" method="GET" class="row g-3">
+            <!-- Keyword search -->
+            <div class="col-md-5">
+                <label for="q" class="form-label form-label-custom">Search Keyword</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-success"><i class="fa-solid fa-search"></i></span>
+                    <input type="text" 
+                           name="q" 
+                           id="q" 
+                           class="form-control form-control-custom border-start-0 ps-0" 
+                           placeholder="e.g. Wheat, PM-Kisan, Insurance" 
+                           value="{{ query }}">
+                </div>
+            </div>
+
+            <!-- Category -->
+            <div class="col-md-3">
+                <label for="category" class="form-label form-label-custom">Category</label>
+                <select name="category" id="category" class="form-select form-control-custom">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- State -->
+            <div class="col-md-3">
+                <label for="state" class="form-label form-label-custom">State-Specific</label>
+                <select name="state" id="state" class="form-select form-control-custom">
+                    <option value="">All Regions</option>
+                    {% for st in states %}
+                        <option value="{{ st }}" {% if selected_state == st %}selected{% endif %}>{{ st }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Search Action -->
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary-custom w-100 py-2 px-0 text-center">
+                    <i class="fa-solid fa-filter"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Catalog Listing -->
+    <div class="row g-4">
+        {% if schemes %}
+            {% for scheme in schemes %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card-custom bg-white h-100 d-flex flex-column justify-content-between p-4">
+                        <div>
+                            <!-- Header elements -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <span class="badge bg-secondary-subtle text-secondary">{{ scheme.category }}</span>
+                                
+                                {% if current_user.is_authenticated %}
+                                    {% set status = eligibility_map[scheme.id] %}
+                                    {% if status.is_eligible %}
+                                        <span class="eligibility-badge eligibility-high"><i class="fa-solid fa-circle-check me-1"></i>Eligible</span>
+                                    {% elif status.score > 0 %}
+                                        <span class="eligibility-badge eligibility-mid" data-bs-toggle="tooltip" title="{{ status.gaps[0] }}"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ status.score }}% Match</span>
+                                    {% else %}
+                                        <span class="eligibility-badge eligibility-low"><i class="fa-solid fa-circle-xmark me-1"></i>Ineligible</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+
+                            <h4 class="h5 mb-2 text-success-emphasis text-truncate-2">{{ scheme.name }}</h4>
+                            <p class="text-muted small mb-4 text-truncate-4">{{ scheme.description }}</p>
+                        </div>
+
+                        <!-- Footer parameters -->
+                        <div class="border-top pt-3">
+                            <div class="row text-center mb-3">
+                                <div class="col-6 border-end">
+                                    <small class="d-block text-muted">Region</small>
+                                    <span class="fw-semibold text-dark small text-truncate d-block">{{ scheme.state_specific or 'All India' }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="d-block text-muted">Max Land Limit</small>
+                                    <span class="fw-semibold text-dark small">
+                                        {% if scheme.max_land_size %}
+                                            {{ scheme.max_land_size }} Ha
+                                        {% else %}
+                                            No Limit
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="d-grid">
+                                <a href="{{ url_for('schemes.detail', scheme_id=scheme.id) }}" class="btn btn-outline-custom btn-sm py-2">
+                                    View Full Details <i class="fa-solid fa-arrow-up-right-from-square ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <i class="fa-solid fa-triangle-exclamation text-warning fa-4x mb-3"></i>
+                <h3>No Schemes Found</h3>
+                <p class="text-muted">Try adjusting your filters or search keywords to view broader state and national programs.</p>
+                <a href="{{ url_for('schemes.list_schemes') }}" class="btn btn-primary-custom mt-2">Clear Filters</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Activate tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %}

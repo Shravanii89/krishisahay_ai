@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - KrishiSahay AI{% endblock %}
+
+{% block content %}
+<div class="container py-4 mt-3">
+    <!-- Header -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <h1 class="h2 mb-1"><i class="fa-solid fa-lock text-success me-2"></i>Admin Dashboard</h1>
+            <p class="text-muted">Monitor registrations, database records, and document scans.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{{ url_for('admin.add_scheme') }}" class="btn btn-primary-custom">
+                <i class="fa-solid fa-plus me-2"></i> Add New Scheme
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card p-3 dash-card h-100">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-muted text-uppercase small mb-1">Total Registered Farmers</h6>
+                        <h2 class="fw-bold mb-0 text-success">{{ farmers_count }}</h2>
+                    </div>
+                    <div class="icon-circle bg-success text-white mb-0">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-3 dash-card earth h-100">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-muted text-uppercase small mb-1">Active Schemes</h6>
+                        <h2 class="fw-bold mb-0 text-warning">{{ schemes_count }}</h2>
+                    </div>
+                    <div class="icon-circle bg-warning text-white mb-0">
+                        <i class="fa-solid fa-gavel"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-3 dash-card orange h-100">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-muted text-uppercase small mb-1">Documents Scanned</h6>
+                        <h2 class="fw-bold mb-0 text-primary">{{ uploads_count }}</h2>
+                    </div>
+                    <div class="icon-circle bg-primary text-white mb-0">
+                        <i class="fa-solid fa-barcode"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tables row -->
+    <div class="row g-4">
+        <!-- Recent Farmers -->
+        <div class="col-lg-6">
+            <div class="card-custom p-4 bg-white shadow-sm border-0 h-100">
+                <h4 class="mb-4 text-success-emphasis border-bottom pb-2">
+                    <i class="fa-solid fa-circle-user text-success me-2"></i>Recent Registrations
+                </h4>
+
+                {% if recent_farmers %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr class="text-muted small">
+                                    <th>Name</th>
+                                    <th>State</th>
+                                    <th>Land</th>
+                                    <th>Income</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for farmer in recent_farmers %}
+                                    <tr class="small">
+                                        <td class="fw-semibold text-dark">{{ farmer.full_name }}</td>
+                                        <td>{{ farmer.state }}</td>
+                                        <td class="text-success">{{ farmer.land_size }} Ha</td>
+                                        <td class="text-success">₹{{ farmer.annual_income|round|int }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted py-4 text-center">No farmers registered yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Uploads -->
+        <div class="col-lg-6">
+            <div class="card-custom p-4 bg-white shadow-sm border-0 h-100">
+                <h4 class="mb-4 text-success-emphasis border-bottom pb-2">
+                    <i class="fa-solid fa-file-invoice-dollar text-success me-2"></i>Recent Scans
+                </h4>
+
+                {% if recent_uploads %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr class="text-muted small">
+                                    <th>Farmer ID/Mobile</th>
+                                    <th>Type</th>
+                                    <th>Date</th>
+                                    <th>AI Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for upload in recent_uploads %}
+                                    <tr class="small">
+                                        <td class="fw-semibold text-dark">{{ upload.farmer.mobile_number }}</td>
+                                        <td><span class="badge bg-secondary-subtle text-secondary">{{ upload.file_type.capitalize() }}</span></td>
+                                        <td>{{ upload.uploaded_at.strftime('%d-%b') }}</td>
+                                        <td>
+                                            {% if upload.ai_status == 'Completed' %}
+                                                <span class="badge bg-success">Scanned</span>
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark">Processing</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted py-4 text-center">No documents uploaded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
