@@ -1,7 +1,8 @@
 import os
 import time
 
-# Attempt to import the Gemini SDK — fail gracefully if not installed
+from app.models import CustomScheme
+
 try:
     import google.generativeai as genai
     GEMINI_SDK_AVAILABLE = True
@@ -10,20 +11,17 @@ except ImportError:
 
 
 class AIService:
-    """
-    Modular AI service that integrates with the Google Gemini API.
-    Falls back to a descriptive error message if the SDK or API key is unavailable.
-    API keys are read from the GEMINI_API_KEY environment variable.
-    """
 
-    GEMINI_MODEL = "gemini-1.5-flash"
+    GEMINI_MODEL ="gemini-2.5-flash"
 
     def __init__(self, api_key=None):
-        self.api_key = api_key or os.environ.get('GEMINI_API_KEY')
+        self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
+
         self.is_ready = GEMINI_SDK_AVAILABLE and bool(self.api_key)
 
         if self.is_ready:
             genai.configure(api_key=self.api_key)
+
             self.model = genai.GenerativeModel(
                 model_name=self.GEMINI_MODEL,
                 generation_config={
@@ -31,124 +29,192 @@ class AIService:
                     "top_p": 0.95,
                     "top_k": 40,
                     "max_output_tokens": 2048,
-                },
-                safety_settings=[
-                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-                ]
+                }
             )
         else:
             self.model = None
 
     def _build_system_context(self, user):
-        """Builds a rich farmer profile context block to inject into every prompt."""
+
         crops = user.crop_type if user.crop_type else "Not specified"
+
         land_ha = user.land_size
+
         land_acres = round(land_ha * 2.47105, 2)
 
-        # Derive farmer scale
-        if land_ha <= 1.0:
-            farmer_scale = "Marginal Farmer (≤ 1 Ha)"
-        elif land_ha <= 2.0:
-            farmer_scale = "Small Farmer (1–2 Ha)"
+        if land_ha <= 1:
+            farmer_scale = "Marginal Farmer"
+
+        elif land_ha <= 2:
+            farmer_scale = "Small Farmer"
+
         else:
-            farmer_scale = "Other Farmer (> 2 Ha)"
+            farmer_scale = "Large Farmer"
 
-        context = f"""You are KrishiSahay AI, a highly knowledgeable, empathetic, and farmer-friendly agricultural assistant for Indian farmers. 
-You help farmers discover government schemes they are eligible for, explain application processes in simple language, and answer questions about agricultural subsidies and benefits.
+        # Read ALL schemes from database
+        schemes = CustomScheme.query.all()
 
-You are currently assisting a registered farmer with the following profile:
+        scheme_text = ""
 
----
-FARMER PROFILE:
-- Name: {user.full_name}
-- Age: {user.age} years
-- State: {user.state}
-- District: {user.district}
-- Village: {user.village}
-- Crops Grown: {crops}
-- Land Size: {land_ha} hectares ({land_acres} acres) — {farmer_scale}
-- Annual Household Income: ₹{user.annual_income:,.0f}
-- Social Category: {user.category}
----
+        for s in schemes:
+            scheme_text += f"""
+Scheme Name : {s.name}
 
-INSTRUCTIONS:
-1. Always address the farmer by their first name in a warm, respectful tone.
-2. When recommending schemes, ALWAYS structure your response clearly with these sections using markdown:
-   - **Scheme Name** (with the full official name)
-   - **Why You Qualify** (personalized reason based on the farmer's profile)
-   - **Benefits** (concrete financial/material benefits)
-   - **Required Documents** (bullet list)
-   - **How to Apply** (numbered step-by-step process)
-   - **Official Website** (a real, working government URL)
-3. If the farmer asks a general question (e.g., "how are you?"), respond conversationally and briefly.
-4. If you cannot find relevant schemes for a question, honestly say so and suggest the farmer contact the Kisan Helpline at 1800-180-1551.
-5. Always respond in clear, simple English that a farmer with basic literacy can understand. Avoid jargon.
-6. Do NOT make up scheme names or URLs. Only recommend real, well-known Indian government schemes (PM-KISAN, PMFBY, PMKSY, KCC, etc.).
-7. Keep answers concise and actionable."""
+Category : {s.category}
+
+Project Cost : {s.project_cost}
+
+Subsidy : {s.subsidy}
+
+Description : {s.description}
+
+Eligibility : {s.eligibility}
+
+--------------------------------------
+"""
+
+        context = f"""
+You are KrishiSahay AI.
+
+You are an agricultural expert.
+
+You MUST recommend schemes from the database below whenever applicable.
+
+Never ignore these schemes.
+
+Farmer Profile
+
+Name : {user.full_name}
+
+Age : {user.age}
+
+State : {user.state}
+
+District : {user.district}
+
+Village : {user.village}
+
+Land : {land_ha} hectares ({land_acres} acres)
+
+Farmer Type : {farmer_scale}
+
+Annual Income : ₹{user.annual_income}
+
+Category : {user.category}
+
+Crops : {crops}
+
+
+=========================
+AVAILABLE SCHEMES
+=========================
+
+{scheme_text}
+
+
+Instructions
+
+1. If user asks about schemes, recommend ONLY from the above list.
+
+2. Explain subsidy.
+
+3. Explain project cost.
+
+4. Explain eligibility.
+
+5. Explain benefits.
+
+6. Answer in simple English.
+
+7. If user asks in Marathi, reply in Marathi.
+
+8. Use markdown headings.
+
+9. Address the farmer politely.
+"""
+
         return context
 
     def ask_gemini(self, user, user_message, conversation_history=None):
         """
-        Sends the farmer's question along with their profile to Gemini.
-        Returns the AI's response as a string.
-        conversation_history: list of dicts [{'role': 'user'|'model', 'parts': [text]}]
+        Send a message to Gemini and get AI-powered recommendations.
         """
+        
+        # Check if service is ready
         if not self.is_ready:
             if not GEMINI_SDK_AVAILABLE:
-                return (
-                    "⚠️ **Configuration Error:** The `google-generativeai` library is not installed. "
-                    "Please run `pip install google-generativeai` to enable AI features."
-                )
-            return (
-                "⚠️ **API Key Missing:** The Gemini AI assistant is not configured. "
-                "Please create a `.env` file in the project root with:\n\n"
-                "```\nGEMINI_API_KEY=your_api_key_here\n```\n\n"
-                "You can get a free API key from [Google AI Studio](https://aistudio.google.com/app/apikey)."
-            )
+                return "Gemini SDK is not installed."
+            return "Gemini API Key is missing."
 
+        # Build system context
         system_context = self._build_system_context(user)
 
-        # Build conversation history for multi-turn chat
+        # Prepare conversation history
         history = []
+
         if conversation_history:
-            for entry in conversation_history:
+            for item in conversation_history:
                 history.append({
-                    "role": entry["role"],
-                    "parts": [entry["text"]]
+                    "role": item["role"],
+                    "parts": [item["text"]]
                 })
 
         try:
-            # Start a chat session with system context prepended
+            # Start chat with history
             chat = self.model.start_chat(history=history)
-            # First turn always includes the system context + current message
-            full_prompt = f"{system_context}\n\n---\nFARMER'S QUESTION:\n{user_message}"
-            response = chat.send_message(full_prompt)
-            return response.text
+
+            # Build the prompt
+            prompt = f"""
+{system_context}
+
+Farmer Question:
+
+{user_message}
+
+Remember:
+
+• Recommend schemes from the database.
+
+• If multiple schemes match, show all.
+
+• Mention subsidy.
+
+• Mention project cost.
+
+• Mention eligibility.
+
+• Mention why the farmer qualifies.
+
+• If user asks about dairy, recommend Dairy Farming scheme.
+
+• If user asks about goat, recommend Goat Farming scheme.
+
+• If user asks about poultry, recommend Poultry Farming scheme.
+
+• If user asks about tractor, recommend Tractor Purchase.
+
+• If user asks about polyhouse, recommend Polyhouse.
+
+• If user asks about warehouse, recommend Warehouse.
+
+• If user asks about cold storage, recommend Cold Storage.
+
+• If user asks about fruit processing, recommend Fruit Processing Unit.
+
+• If no matching scheme exists, say politely that no matching scheme was found.
+"""
+
+            # Send message and get response
+            response = chat.send_message(prompt)
+
+            # Return the text response
+            if response and hasattr(response, 'text'):
+                return response.text
+            else:
+                return "No response received from AI model."
 
         except Exception as e:
-            error_str = str(e).lower()
-            if "api key" in error_str or "invalid" in error_str or "api_key" in error_str:
-                return (
-                    "⚠️ **Invalid API Key:** Your Gemini API key appears to be invalid or expired. "
-                    "Please check your `.env` file and make sure the key is correct.\n\n"
-                    "Get a valid key from [Google AI Studio](https://aistudio.google.com/app/apikey)."
-                )
-            elif "quota" in error_str or "rate" in error_str or "429" in error_str:
-                return (
-                    "⚠️ **Rate Limit Reached:** Too many requests have been made to the AI service. "
-                    "Please wait a moment and try again."
-                )
-            elif "network" in error_str or "connection" in error_str or "timeout" in error_str:
-                return (
-                    "⚠️ **Connection Error:** Unable to reach the AI service. "
-                    "Please check your internet connection and try again."
-                )
-            else:
-                return (
-                    f"⚠️ **AI Service Error:** An unexpected error occurred while contacting the AI. "
-                    f"Please try again in a moment.\n\n"
-                    f"*Technical details: {str(e)[:200]}*"
-                )
+            return f"AI Error: {str(e)}"
 
     def analyze_document(self, file_path, file_type):
         """
@@ -195,6 +261,7 @@ INSTRUCTIONS:
     def get_smart_recommendations(self, user_profile, eligible_schemes):
         """Generates a natural language summary for the eligibility report page."""
         scheme_names = [s['scheme'].name for s in eligible_schemes]
+        
         if not scheme_names:
             return (
                 f"Namaste {user_profile.full_name}, based on your details (Annual Income: ₹{user_profile.annual_income:,.0f}, "
@@ -202,6 +269,7 @@ INSTRUCTIONS:
                 f"We recommend updating your profile or crop details to verify again, or uploading your land record so our "
                 f"team can check manual exceptions."
             )
+        
         top_scheme = scheme_names[0]
         response = (
             f"Namaste {user_profile.full_name}! Based on our AI analysis, you are eligible for **{len(scheme_names)} government schemes**. "

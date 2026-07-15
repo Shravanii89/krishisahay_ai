@@ -113,3 +113,26 @@ class ChatHistory(db.Model):
     def __repr__(self):
         sender = 'Bot' if self.is_bot else 'User'
         return f'<ChatHistory [{sender}] {self.message[:40]}>'
+class CustomScheme(db.Model):
+    __tablename__ = "custom_schemes"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    name = db.Column(db.String(200), nullable=False)
+
+    category = db.Column(db.String(100))
+
+    project_cost = db.Column(db.String(100))
+
+    subsidy = db.Column(db.String(200))
+
+    description = db.Column(db.Text)
+
+    eligibility = db.Column(db.Text)
+
+    # NEW FIELDS
+    required_documents = db.Column(db.Text)
+
+    application_process = db.Column(db.Text)
+
+    official_link = db.Column(db.String(500))
